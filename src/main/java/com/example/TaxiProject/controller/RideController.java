@@ -8,7 +8,7 @@ import java.util.Optional;
 import com.example.TaxiProject.entities.Driver;
 import com.example.TaxiProject.entities.RideDetails;
 import com.example.TaxiProject.repository.DriverRepository;
-import com.example.TaxiProject.repository.UserRespository;
+import com.example.TaxiProject.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,8 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-
-
 import com.example.TaxiProject.entities.User;
 
 import com.example.TaxiProject.repository.RideDetailsRepository;
@@ -27,106 +25,106 @@ import com.example.TaxiProject.repository.RideDetailsRepository;
 
 @RestController
 @RequestMapping("/api")
-public class OrderController {
+public class RideController {
 
-	@Autowired
-	private UserRespository repo;
-	
-	@Autowired
-	RideDetailsRepository rideRepo;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Autowired
-	DriverRepository driverRepo;
+    @Autowired
+    RideDetailsRepository rideDetailsRepository;
 
-	@PostMapping("/newRide")
-	public ResponseEntity<?> bookRide(@RequestBody RideDetails rideDetails, BindingResult result, Model model, @AuthenticationPrincipal User user){
-		String pickupLoc = rideDetails.getPickupLoc();
-		String destination = rideDetails.getDestination();
-		String vehicleType = rideDetails.getVehicleType();
-		long price = 100;
-		if(pickupLoc != "Chennai"){
-			price++;
-		}
+    @Autowired
+    DriverRepository driverRepository;
 
-		RideDetails newRideDetails = new RideDetails();
-		newRideDetails.setPickupLoc(pickupLoc);
-		newRideDetails.setDestination(destination);
-		newRideDetails.setVehicleType(vehicleType);
-		newRideDetails.setPrice(price);
-		newRideDetails.setUser(user);
+    @PostMapping("/newRide")
+    public ResponseEntity<?> bookRide(@RequestBody RideDetails rideDetails, BindingResult result, Model model, @AuthenticationPrincipal User user) {
+        String pickupLoc = rideDetails.getPickupLoc();
+        String destination = rideDetails.getDestination();
+        String vehicleType = rideDetails.getVehicleType();
+        long price = 100;
+        if (pickupLoc != "Chennai") {
+            price++;
+        }
 
-		rideRepo.save(newRideDetails);
-		return ResponseEntity.ok(newRideDetails);
+        RideDetails newRideDetails = new RideDetails();
+        newRideDetails.setPickupLoc(pickupLoc);
+        newRideDetails.setDestination(destination);
+        newRideDetails.setVehicleType(vehicleType);
+        newRideDetails.setPrice(price);
+        newRideDetails.setUser(user);
 
-	}
+        rideDetailsRepository.save(newRideDetails);
+        return ResponseEntity.ok(newRideDetails);
 
-	@GetMapping("/rideDetails")
-	public ResponseEntity<?> rideDetails(@AuthenticationPrincipal User user){
+    }
 
-		List<RideDetails> rideDetails = rideRepo.findByUserId(user.getId());
+    @GetMapping("/rideDetails")
+    public ResponseEntity<?> rideDetails(@AuthenticationPrincipal User user) {
 
-		RideDetails max = rideDetails.stream().max(Comparator.comparingLong(RideDetails::getRideId))
-				.get();
+        List<RideDetails> rideDetails = rideDetailsRepository.findByUserId(user.getId());
 
-		return ResponseEntity.ok(max);
-	}
+        RideDetails max = rideDetails.stream().max(Comparator.comparingLong(RideDetails::getRideId)).get();
 
-	@GetMapping("/history")
-	public ResponseEntity<?> bookingHistory(Principal principal, Model model) {
-		String username = principal.getName();
-		Optional<User> user = repo.findByUsername(username);
+        return ResponseEntity.ok(max);
+    }
 
-		List<RideDetails> rideDetails = rideRepo.findByUserId(user.get().getId());
+    @GetMapping("/history")
+    public ResponseEntity<?> bookingHistory(Principal principal, Model model) {
+        String username = principal.getName();
+        Optional<User> user = userRepository.findByUsername(username);
 
-		model.addAttribute("listRides", rideDetails);
+        List<RideDetails> rideDetails = rideDetailsRepository.findByUserId(user.get().getId());
 
-		return ResponseEntity.ok(rideDetails);
+        model.addAttribute("listRides", rideDetails);
 
-	}
+        return ResponseEntity.ok(rideDetails);
 
-	@GetMapping("/edit")
-	public ResponseEntity<?> showEditProductPage(Principal principal) {
-		String email = principal.getName();
-		Optional<User> user = repo.findByUsername(email);
+    }
 
-		return ResponseEntity.ok(user.get());
+    @GetMapping("/edit")
+    public ResponseEntity<?> showEditProductPage(Principal principal) {
+        String email = principal.getName();
+        Optional<User> user = userRepository.findByUsername(email);
 
-	}
+        return ResponseEntity.ok(user.get());
+
+    }
 
 
-	@PostMapping("/update")
-	public ResponseEntity<?> editProfile(@RequestBody User editRequest, @AuthenticationPrincipal User user) {
-		user.setFirstName(editRequest.getFirstName());
-		user.setLastName(editRequest.getLastName());
-		user.setPassword(editRequest.getPassword());
+    @PostMapping("/update")
+    public ResponseEntity<?> editProfile(@RequestBody User editRequest, @AuthenticationPrincipal User user) {
+        user.setFirstName(editRequest.getFirstName());
+        user.setLastName(editRequest.getLastName());
+        user.setPassword(editRequest.getPassword());
 
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-		repo.save(user);
-		return ResponseEntity.ok(user);
-	}
-	@GetMapping("/driverDetails")
-	public ResponseEntity<?> driverDetails(Model model){
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
+    }
 
-		List<Driver> driver = driverRepo.findAll();
+    @GetMapping("/driverDetails")
+    public ResponseEntity<?> driverDetails(Model model) {
 
-		model.addAttribute("listDrivers", driver);
+        List<Driver> driver = driverRepository.findAll();
 
-		return ResponseEntity.ok(driver);
-	}
+        model.addAttribute("listDrivers", driver);
 
-	@PostMapping("/registerDriver")
-	public ResponseEntity<?> registerDriver(@RequestBody Driver driver){
-		String name = driver.getName();
-		Long number = driver.getPhoneNumber();
-		Long id = driver.getId();
-		String status = driver.getStatus();
+        return ResponseEntity.ok(driver);
+    }
 
-		Driver newDriver = new Driver(id, name, number, status);
-		driverRepo.save(newDriver);
+    @PostMapping("/registerDriver")
+    public ResponseEntity<?> registerDriver(@RequestBody Driver driver) {
+        String name = driver.getName();
+        Long number = driver.getPhoneNumber();
+        Long id = driver.getId();
+        String status = driver.getStatus();
 
-		return ResponseEntity.ok(newDriver);
-	}
+        Driver newDriver = new Driver(id, name, number, status);
+        driverRepository.save(newDriver);
+
+        return ResponseEntity.ok(newDriver);
+    }
 }

@@ -1,12 +1,9 @@
-package com.example.project2.repository;
+package com.example.TaxiProject.repository;
 
-import java.util.List;
-
-import com.example.project2.entity.Driver;
+import com.example.TaxiProject.entities.Driver;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DriverRepository extends JpaRepository<Driver, Long>{
-    //get driver by driver id
+public interface DriverRepository extends JpaRepository<Driver, Long> {
     Driver findDriverById(long id);
 }
 

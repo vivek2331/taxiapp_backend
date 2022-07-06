@@ -1,4 +1,4 @@
-package com.example.TaxiProject.filter;
+package com.example.TaxiProject.jwt;
 
 
 import java.io.IOException;
@@ -19,55 +19,44 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.TaxiProject.repository.UserRespository;
+import com.example.TaxiProject.repository.UserRepository;
 import com.example.TaxiProject.util.JwtUtil;
 
 @Component
-public class JwtFilter extends OncePerRequestFilter{
+public class JwtFilter extends OncePerRequestFilter {
 
-	@Autowired
-	private UserRespository userRepo;
-	
-	@Autowired
-	private JwtUtil jwtUtil;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws ServletException, IOException {
-		
-		// Get authorization header and validate
-		final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-		if (!StringUtils.hasText(header) || (StringUtils.hasText(header) && !header.startsWith("Bearer "))){
-			chain.doFilter(request,response);
-			return;
-		}
-		
-		final String token = header.split(" ")[1].trim();
-		//System.out.println(token);
-		//Get user identity and set it on the spring security context
-		UserDetails userDetails=userRepo
-		        .findByUsername(jwtUtil.getUsernameFromToken(token))
-		        .orElse(null);
-		
-		//Get jwt token and validate
-		
-		if(!jwtUtil.validateToken(token, userDetails)) {
-			chain.doFilter(request, response);
-			return;
-		}
-		
-		UsernamePasswordAuthenticationToken
-	      authentication=new UsernamePasswordAuthenticationToken(
-	    	userDetails, null,
-	        userDetails == null?
-	            List.of() : userDetails.getAuthorities()
-	   );
-	authentication.setDetails(
-	    new WebAuthenticationDetailsSource().buildDetails(request)
-	);
-	
-	//this is where authentication stuff happensand user is now valid
-	SecurityContextHolder.getContext().setAuthentication(authentication);
-	chain.doFilter(request,response);
-	}
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+
+        // Get authorization header and validate
+        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (!StringUtils.hasText(header) || (StringUtils.hasText(header) && !header.startsWith("Bearer "))) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        final String token = header.split(" ")[1].trim();
+
+        //Get user identity and set it on the spring security context
+        UserDetails userDetails = userRepository.findByUsername(jwtUtil.getUsernameFromToken(token)).orElse(null);
+
+        //Get jwt token and validate
+
+        if (!jwtUtil.validateToken(token, userDetails)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails == null ? List.of() : userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        chain.doFilter(request, response);
+    }
 }

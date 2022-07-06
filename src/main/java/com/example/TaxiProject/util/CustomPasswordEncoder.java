@@ -1,4 +1,4 @@
-package com.example.project2.util;
+package com.example.TaxiProject.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;

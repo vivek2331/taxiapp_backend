@@ -1,4 +1,4 @@
-package com.example.TaxiProject.entity;
+package com.example.TaxiProject.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,12 +30,12 @@ public class Driver {
     @JoinColumn(name = "rideId")
     private RideDetails rideDetails;
 
-    public Driver(){
+    public Driver() {
 
     }
 
-    public Driver(long id,String name, long phoneNumber, String status) {
-        this.id=id;
+    public Driver(long id, String name, long phoneNumber, String status) {
+        this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.status = status;
@@ -80,8 +80,5 @@ public class Driver {
     public void setRideDetails(RideDetails rideDetails) {
         this.rideDetails = rideDetails;
     }
-
-
-
 }
 

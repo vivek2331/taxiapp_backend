@@ -1,13 +1,12 @@
-package com.example.project2;
+package com.example.TaxiProject;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 public class ServletInitializer extends SpringBootServletInitializer {
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(TaxiProjectApplication.class);
-	}
-
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(TaxiProjectApplication.class);
+    }
 }

@@ -1,21 +1,22 @@
-package com.example.project2.dto;
+package com.example.TaxiProject.dto;
 
 public class AuthCredentialsRequest {
-	
-	private String username;
-	private String password;
-	public String getUsername() {
-		return username;
-	}
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	
+    private String username;
+    private String password;
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

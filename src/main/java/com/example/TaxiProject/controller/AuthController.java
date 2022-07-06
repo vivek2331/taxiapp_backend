@@ -1,4 +1,4 @@
-package com.example.TaxiProject.web;
+package com.example.TaxiProject.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,73 +19,61 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.TaxiProject.dto.AuthCredentialsRequest;
-import com.example.TaxiProject.entity.User;
+import com.example.TaxiProject.entities.User;
 import com.example.TaxiProject.payload.SignUpRequest;
 import com.example.TaxiProject.repository.RideDetailsRepository;
-import com.example.TaxiProject.repository.UserRespository;
+import com.example.TaxiProject.repository.UserRepository;
 import com.example.TaxiProject.util.JwtUtil;
 
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-	@Autowired
-	private AuthenticationManager authenticationManager;
-	
-	@Autowired
-	private JwtUtil jwtUtil;
-	
-	@Autowired
-	private UserRespository userRespository;
-	
-	@Autowired
-	RideDetailsRepository ride_Details_Repository;
-	
-	@GetMapping("/")
-	public String index() {
-		return "test string";
-	}
-	
-	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody AuthCredentialsRequest request){
-		try {
-            Authentication authenticate = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(),request.getPassword()));
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody AuthCredentialsRequest request) {
+        try {
+            Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
             User user = (User) authenticate.getPrincipal();
             user.setPassword(null);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, jwtUtil.generateToken(user))
-                    .body(user);
+            return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, jwtUtil.generateToken(user)).body(user);
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-	}
+    }
 
-	
-	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser( @RequestBody SignUpRequest signUpRequest){
-		
-		User user = new User();
-		user.setUsername(signUpRequest.getUsername());
-		user.setPassword(signUpRequest.getPassword());
-		user.setFirstName(signUpRequest.getFirstName());
-		user.setLastName(signUpRequest.getLastName());
-		
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		
-		userRespository.save(user);
-		
-		return ResponseEntity.ok(user);
-		
-	}
 
-	@GetMapping("/validate")
-	public ResponseEntity<?> validateToken(@RequestParam String token, @AuthenticationPrincipal User user){
-		boolean isTokenValid = jwtUtil.validateToken(token, user);
-		return ResponseEntity.ok(isTokenValid);
-	}
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
 
+        User user = new User();
+        user.setUsername(signUpRequest.getUsername());
+        user.setPassword(signUpRequest.getPassword());
+        user.setFirstName(signUpRequest.getFirstName());
+        user.setLastName(signUpRequest.getLastName());
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(user);
+
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestParam String token, @AuthenticationPrincipal User user) {
+        boolean isTokenValid = jwtUtil.validateToken(token, user);
+        return ResponseEntity.ok(isTokenValid);
+    }
 }
